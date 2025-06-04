@@ -6,7 +6,7 @@
 
 quantRush is a sophisticated C++ simulation engine designed to model high-frequency trading (HFT) market making strategies in realistic market conditions. The project implements a complete limit order book system with advanced order matching, latency modeling, and comprehensive performance analytics.
 
-![Market Making Strategy Visualization](assets/market_making_diagram.png)
+![Market Making Strategy Visualization](assets/market_making_diagram..png)
 
 ## ✨ Key Features
 
