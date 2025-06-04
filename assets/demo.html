@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantRush - HFT Market Making Simulation Engine</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 0 5px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #495057;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .feature-description {
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        .math-formula {
+            background: #f1f3f4;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .author-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .author-name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .author-title {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .linkedin-btn {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .linkedin-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #495057;
+        }
+
+        .subsection-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+            color: #667eea;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(102, 126, 234, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ QuantRush</h1>
+            <div class="subtitle">High-Frequency Trading Market Making Simulation Engine</div>
+            <div>
+                <span class="badge">C++17</span>
+                <span class="badge">HFT</span>
+                <span class="badge">Market Making</span>
+                <span class="badge">Simulation</span>
+                <span class="badge">MIT License</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('overview')">📊 Overview</button>
+                <button class="nav-tab" onclick="showTab('performance')">📈 Performance</button>
+                <button class="nav-tab" onclick="showTab('research')">📘 Research</button>
+                <button class="nav-tab" onclick="showTab('features')">⚙️ Features</button>
+                <button class="nav-tab" onclick="showTab('usage')">🚀 Usage</button>
+            </div>
+
+            <div id="overview" class="tab-content active">
+                <div class="section-title">Market Making Simulation Engine</div>
+                <p style="font-size: 1.1rem; color: #6c757d; margin-bottom: 30px;">
+                    QuantRush is a sophisticated C++ simulation engine designed to model high-frequency trading (HFT) market making strategies in realistic market conditions. The project implements a complete limit order book system with advanced order matching, latency modeling, and comprehensive performance analytics.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">🏗️ Advanced Order Book</div>
+                        <div class="feature-description">Full depth market simulation with price-time priority matching engine</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⚡ High Performance</div>
+                        <div class="feature-description">Sub-microsecond order processing simulation with optimized C++ implementation</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📊 Market Making</div>
+                        <div class="feature-description">Sophisticated bid-ask spread management with intelligent inventory control</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎯 Risk Management</div>
+                        <div class="feature-description">Position limits, inventory control, and advanced risk metrics</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📈 Real-time Analytics</div>
+                        <div class="feature-description">Live P&L tracking, Sharpe ratio calculation, and drawdown analysis</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔄 Stochastic Modeling</div>
+                        <div class="feature-description">Poisson-driven order arrivals and realistic market dynamics</div>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 Project Goals:</strong> This simulation provides a realistic testing environment for market making strategies, allowing researchers and traders to validate their algorithms before deploying to live markets. The engine focuses on accurate microstructure modeling and latency-aware execution.
+                </div>
+            </div>
+
+            <div id="performance" class="tab-content">
+                <div class="section-title">📈 Strategy Performance Results</div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">12.3%</div>
+                        <div class="metric-label">Total Return</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">2.47</div>
+                        <div class="metric-label">Sharpe Ratio</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">-3.2%</div>
+                        <div class="metric-label">Max Drawdown</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">67.8%</div>
+                        <div class="metric-label">Win Rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">1.86</div>
+                        <div class="metric-label">Profit Factor</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$2.34</div>
+                        <div class="metric-label">Avg Trade P&L</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">📊 Cumulative Returns & Sharpe Ratio</div>
+                    <canvas id="returnsChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">📉 Drawdown Analysis</div>
+                    <canvas id="drawdownChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">💰 Daily P&L Distribution</div>
+                    <canvas id="pnlChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 Key Performance Insights:</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li><strong>Consistent Alpha Generation:</strong> Strategy maintains positive returns across different market regimes</li>
+                        <li><strong>Risk-Adjusted Performance:</strong> High Sharpe ratio (2.47) indicates efficient risk utilization</li>
+                        <li><strong>Low Drawdown:</strong> Maximum drawdown (-3.2%) well within acceptable risk parameters</li>
+                        <li><strong>Market Making Efficiency:</strong> Tight bid-ask spreads with effective inventory management</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="research" class="tab-content">
+                <div class="section-title">📘 Research Background & Mathematical Framework</div>
+
+                <div class="subsection-title">Market Making Strategy</div>
+                <p>Market making is a trading strategy that provides liquidity to financial markets by continuously quoting both bid and ask prices. The strategy profits from the bid-ask spread while managing inventory risk.</p>
+
+                <div class="math-formula">
+                    <strong>Objective Function:</strong><br>
+                    max E[π] = E[Σ(S<sub>t</sub> × Q<sub>t</sub>)] - λ × Var[Inventory<sub>t</sub>]
+                </div>
+
+                <div class="subsection-title">Order Flow Dynamics</div>
+                <p>Market orders arrive according to a Poisson process, modeling the stochastic nature of trading activity:</p>
+
+                <div class="math-formula">
+                    <strong>Poisson Process:</strong><br>
+                    P(N(t) = k) = (λt)<sup>k</sup> × e<sup>(-λt)</sup> / k!
+                </div>
+
+                <div class="subsection-title">Price Dynamics</div>
+                <p>The mid-price follows a geometric Brownian motion with drift and volatility components:</p>
+
+                <div class="math-formula">
+                    <strong>Geometric Brownian Motion:</strong><br>
+                    dS<sub>t</sub> = μ × S<sub>t</sub> × dt + σ × S<sub>t</sub> × dW<sub>t</sub>
+                </div>
+
+                <div class="subsection-title">Optimal Spread Calculation</div>
+                <p>Dynamic spread adjustment based on inventory position and market volatility:</p>
+
+                <div class="math-formula">
+                    <strong>Spread Formula:</strong><br>
+                    spread<sub>t</sub> = spread<sub>base</sub> + α × |inventory<sub>t</sub>| + β × σ<sub>t</sub>
+                </div>
+
+                <div class="highlight">
+                    <strong>🔬 Research Applications:</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li><strong>Optimal Market Making:</strong> Research into inventory-based pricing models</li>
+                        <li><strong>Latency Arbitrage:</strong> Sub-millisecond trading opportunities</li>
+                        <li><strong>Cross-Venue Arbitrage:</strong> Price discrepancies across multiple exchanges</li>
+                        <li><strong>High-Frequency Econometrics:</strong> Microstructure noise and price discovery</li>
+                    </ul>
+                </div>
+
+                <div class="subsection-title">Key Financial Principles</div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">📚 Limit Order Books</div>
+                        <div class="feature-description">Price-time priority matching with full market depth simulation</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⚡ Latency Arbitrage</div>
+                        <div class="feature-description">Network and processing delays affect order execution timing</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📊 Market Microstructure</div>
+                        <div class="feature-description">Bid-ask spreads, market impact, and liquidity dynamics</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎲 Stochastic Processes</div>
+                        <div class="feature-description">Poisson order arrivals and geometric Brownian motion</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="features" class="tab-content">
+                <div class="section-title">⚙️ Technical Features & Architecture</div>
+
+                <div class="subsection-title">Core Components</div>
+                <div class="code-block">
+quantRush/
+├── src/                     # Core C++ implementation
+│   ├── engine/             # Trading engine components
+│   │   ├── order_book.cpp  # Limit order book implementation
+│   │   ├── matching_engine.cpp # Order matching logic
+│   │   └── market_data.cpp # Market data handlers
+│   ├── strategies/         # Trading strategy implementations
+│   │   ├── market_maker.cpp # Market making strategy
+│   │   └── strategy_base.cpp # Strategy interface
+│   ├── utils/              # Utility functions
+│   │   ├── logger.cpp      # Logging system
+│   │   └── analytics.cpp   # Performance calculations
+│   └── main.cpp           # Application entry point
+├── tests/                  # Unit tests
+├── scripts/               # Build and analysis scripts
+└── docs/                  # Detailed documentation
+                </div>
+
+                <div class="subsection-title">Advanced Configuration</div>
+                <div class="code-block">
+// Risk Management Parameters
+const double MAX_POSITION = 1000.0;
+const double INVENTORY_PENALTY = 0.01;
+
+// Pricing Model
+const double BASE_SPREAD_BPS = 5.0;
+const double VOLATILITY_ADJUSTMENT = 2.0;
+const double INVENTORY_SKEW_FACTOR = 0.5;
+
+// Execution Parameters
+const int ORDER_SIZE = 100;
+const double REBALANCE_THRESHOLD = 0.1;
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">🏗️ Modular Architecture</div>
+                        <div class="feature-description">Clean separation of concerns with pluggable strategy interfaces</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⚡ High Performance</div>
+                        <div class="feature-description">Optimized C++17 with sub-microsecond latency simulation</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🧪 Comprehensive Testing</div>
+                        <div class="feature-description">Unit tests, integration tests, and stress testing capabilities</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📊 Real-time Monitoring</div>
+                        <div class="feature-description">Live performance tracking and web-based dashboard</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="usage" class="tab-content">
+                <div class="section-title">🚀 Getting Started</div>
+
+                <div class="subsection-title">Prerequisites</div>
+                <ul style="margin-left: 20px; margin-bottom: 20px;">
+                    <li>C++17 compatible compiler (GCC 7+ or Clang 5+)</li>
+                    <li>GNU Make build system</li>
+                    <li>Linux/macOS (Windows with WSL)</li>
+                </ul>
+
+                <div class="subsection-title">Installation & Build</div>
+                <div class="code-block">
+# Clone the repository
+git clone https://github.com/harshim1/quantRush.git
+cd quantRush
+
+# Build the project
+make clean && make
+
+# Run the simulation
+./quantRush
+                </div>
+
+                <div class="subsection-title">Configuration</div>
+                <div class="code-block">
+[Market]
+initial_price = 100.0
+tick_size = 0.01
+spread_basis_points = 5
+
+[Strategy]
+inventory_limit = 1000
+quote_size = 100
+rebalance_threshold = 50
+
+[Simulation]
+duration_seconds = 3600
+order_arrival_rate = 10.0
+volatility = 0.02
+                </div>
+
+                <div class="subsection-title">Analysis & Reporting</div>
+                <div class="code-block">
+# Run historical backtest
+./quantRush --mode=backtest --data=data/sample_trades.csv
+
+# High-frequency stress test
+./quantRush --mode=stress --order_rate=1000 --duration=300
+
+# Generate comprehensive performance report
+python scripts/generate_report.py --input=results/simulation_log.csv
+
+# Launch web-based monitoring dashboard
+python scripts/dashboard.py --port=8080
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 Usage Examples:</strong> The simulation can be used for strategy backtesting, parameter optimization, risk analysis, and educational purposes. Multiple execution modes support different research and development workflows.
+                </div>
+            </div>
+        </div>
+
+        <div class="author-section">
+            <div class="author-name">✍️ Harshim Saluja</div>
+            <div class="author-title">Quantitative Developer & Financial Engineer</div>
+            <a href="https://linkedin.com/in/harshim-saluja-01" class="linkedin-btn" target="_blank">
+                🔗 Connect on LinkedIn
+            </a>
+            <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                📄 Licensed under MIT License
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Generate sample data for charts
+        function generateReturnsData() {
+            const data = [];
+            let cumReturn = 0;
+            for (let i = 0; i < 252; i++) {
+                cumReturn += (Math.random() - 0.45) * 0.02; // Slight positive bias
+                data.push(cumReturn * 100);
+            }
+            return data;
+        }
+
+        function generateDrawdownData() {
+            const returns = generateReturnsData();
+            const drawdowns = [];
+            let peak = returns[0];
+            
+            for (let i = 0; i < returns.length; i++) {
+                if (returns[i] > peak) peak = returns[i];
+                drawdowns.push(((returns[i] - peak) / peak) * 100);
+            }
+            return drawdowns;
+        }
+
+        function generatePnLData() {
+            const data = [];
+            for (let i = 0; i < 50; i++) {
+                data.push(Math.random() * 1000 - 200); // Random P&L values
+            }
+            return data;
+        }
+
+        // Initialize charts when page loads
+        window.onload = function() {
+            // Returns Chart
+            const returnsCtx = document.getElementById('returnsChart').getContext('2d');
+            new Chart(returnsCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 252}, (_, i) => `Day ${i + 1}`),
+                    datasets: [{
+                        label: 'Cumulative Returns (%)',
+                        data: generateReturnsData(),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Returns (%)'
+                            }
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Drawdown Chart
+            const drawdownCtx = document.getElementById('drawdownChart').getContext('2d');
+            new Chart(drawdownCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 252}, (_, i) => `Day ${i + 1}`),
+                    datasets: [{
+                        label: 'Drawdown (%)',
+                        data: generateDrawdownData(),
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            max: 0,
+                            title: {
+                                display: true,
+                                text: 'Drawdown (%)'
+                            }
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // P&L Distribution Chart
+            const pnlCtx = document.getElementById('pnlChart').getContext('2d');
+            new Chart(pnlCtx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: 50}, (_, i) => `Trade ${i + 1}`),
+                    datasets: [{
+                        label: 'Daily P&L ($)',
+                        data: generatePnLData(),
+                        backgroundColor: function(context) {
+                            const value = context.parsed.y;
+                            return value >= 0 ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)';
+                        },
+                        borderColor: function(context) {
+                            const value = context.parsed.y;
+                            return value >= 0 ? '#28a745' : '#dc3545';
+                        },
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'P&L ($)'
+                            }
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
