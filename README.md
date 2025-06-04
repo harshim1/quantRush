@@ -103,7 +103,7 @@ volatility = 0.02
 ## 📊 Sample Strategy Results
 
 ### Performance Overview
-![Strategy Performance](assets/performance_chart.png)
+![Strategy Performance](assets/PerformaceChart.png)
 
 | Metric | Value |
 |--------|--------|
