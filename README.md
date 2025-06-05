@@ -230,20 +230,6 @@ make test
 ./quantRush --mode=stress --order_rate=1000 --duration=300
 ```
 
-## 📈 Visualization & Analysis
-
-### Generate Performance Reports
-```bash
-# Create comprehensive performance report
-python scripts/generate_report.py --input=results/simulation_log.csv
-```
-
-### Real-time Dashboard
-```bash
-# Launch web-based monitoring dashboard
-python scripts/dashboard.py --port=8080
-```
-
 ## 🚀 Future Enhancements
 
 ### Planned Features
